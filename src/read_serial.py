@@ -1,4 +1,5 @@
 import serial
+import csv
 
 # Function that reads a line and returns the polished string    
     # ser.readline() returns bytes. To obtain something readable I decode with .decode('ascii') and .strip() to remove '\r\n'
@@ -17,6 +18,7 @@ timeout = 1
 
 # Open serial port
 ser = serial.Serial(port, baud, timeout=timeout)
+ser.flush()
 
 # NOTES
     # Serial.println() terminates the string with \r\n
@@ -26,19 +28,38 @@ ser = serial.Serial(port, baud, timeout=timeout)
 # Command to collect data: 
 # EXAMPLE: M 10 2
 command = 'M'   # Measure
-n_samples = 100  # How many samples do I want to average for each input value
-step = 1        # Step for the input signal
+n_samples = 1000  # How many samples do I want to average for each input value
+step = -0.1      # Step for the input signal
 message = " ".join([command, str(n_samples), str(step)])
 
+# TODO: Given n_samples, step and a filename def a function to send the command and store
+# so we can use it in a cycle and get multiple instances of datasets easily
+
+# Save data to a file in csv format
+# https://makersportal.com/blog/2018/2/25/python-datalogger-reading-the-serial-output-from-arduino-to-analyze-data-using-pyserial
+file = open("Dataset.csv", 'a')
+file.truncate(0)
+csv_writer = csv.writer(file, delimiter=',', escapechar=' ', quoting=csv.QUOTE_NONE)
+
+# Send the command to get the measurements
 my_write(ser, message)
+# Listen to the response
 while 1:
-    print(my_readline(ser))
+    # Read a line = a row of the matrix S = a sample
+    line = my_readline(ser)
 
+    # Check if the line is empty => skip
+    if line == '':
+        continue
 
+    # If there is something, I check if it is the termination message
+    if line == "Finished":
+        file.close()
+        break
 
-while 1:
-    command = input("Enter command: \n \t[N] to get an increasing natural number\nCommand: ")
-    ser.write(("<"+command+">").encode())
-    print(my_readline(ser))
+    # If I'm here it is a proper sample
+    print(line)
+    csv_writer.writerow([line])
+    
 
 ser.close() 

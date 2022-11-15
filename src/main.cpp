@@ -17,39 +17,73 @@ boolean newData = false;
 
 // Parser for the message
 char *command, *n_samples_string, *step_string;
-int n_samples, step;
+int n_samples;
+float step;
 void parseMessage(char* message) {
     int i;
 
     // Parse the command
     command = message;                  // Set the command to start where message start
     for(i=0; message[i]!=' '; i++);     // Read all char until I find a space
-    command[i++] = 0;                   // When I find a space, terminate the string
+    message[i++] = 0;                   // When I find a space, terminate the string
 
     // Parse the number of samples
     n_samples_string = message + i;
     for( ; message[i]!=' '; i++);       
-    n_samples_string[i++] = 0;
+    message[i++] = 0;
 
     // Parse the step
     step_string = message + i;
-    for( ; message[i]!=' '; i++);
-    step_string[i++] = 0;
+    //for( ; message[i]!='\0'; i++);
+    //step_string[i++] = 0;
+
+    Serial.printf("[\'%s\',\'%s\',\'%s\']", command, n_samples_string, step_string);
 
     // Convert the strings to integers
     n_samples = atoi(n_samples_string);
-    step = atoi(step_string);
+    step = atof(step_string);
 }
 
 // Data structure for the set of data points
 struct datum {
-    int pwm;
+    float pwm;
     float rpm;
     float force;
 };
 
-void collectData(int n_samples, int step) {
-    
+void getDatumPoint(float pwmValue, struct datum *z) {
+    // Read data and store it in z
+
+    z->pwm = pwmValue;
+    z->rpm = pwmValue * 0.3;
+    z->force = pwmValue * 0.6;
+}
+
+void collectData(int &n_samples, float &step) {
+    // Create the matrix which will contain the data points
+    // NO! It provokes a stack overflow because too much memory
+    int S_size = (int)(abs(180/step)) + 1;
+    // struct datum S[S_size];
+
+    // Detects step to decide if going 0->180 or 180->0
+    float pwm_0 = step>0 ? 0 : 180;
+    float pwm_end = step>0 ? 180 : 0;
+
+    // Cycle to get the data points for each pwm value
+    float pwm=pwm_0;
+    for ( int i=0; i<S_size; pwm += step, i++) {
+        // Create the datum 
+        struct datum z;
+
+        // Pass by reference
+        getDatumPoint(pwm, &z);
+
+        // Send the matrix to the PC via serial
+        Serial.printf("%.2f,%.2f,%.2f\r\n", z.pwm, z.rpm, z.force);
+    }
+
+    // Send something to say it finished
+    Serial.println("Finished");
 }
 
 
@@ -105,13 +139,13 @@ void interpretMessage() {
 
         // Parse the message
         parseMessage(message);
-        Serial.printf("Command: %s, N: %d, step: %d", command, n_samples, step);
+        Serial.printf("Command: %s, N: %d, step: %.2f\r\n", command, n_samples, step);
 
         if (!strcmp(command, "N")) {
             interpretN();
         }
         else if (!strcmp(command, "M")) {
-            collectData(&n_samples, &step);
+            collectData(n_samples, step);
         }
         else {
             Serial.print("Not implemented");
