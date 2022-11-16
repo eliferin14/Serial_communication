@@ -34,32 +34,43 @@ message = " ".join([command, str(n_samples), str(step)])
 
 # TODO: Given n_samples, step and a filename def a function to send the command and store
 # so we can use it in a cycle and get multiple instances of datasets easily
-
-# Save data to a file in csv format
 # https://makersportal.com/blog/2018/2/25/python-datalogger-reading-the-serial-output-from-arduino-to-analyze-data-using-pyserial
-file = open("Dataset.csv", 'a')
-file.truncate(0)
-csv_writer = csv.writer(file, delimiter=',', escapechar=' ', quoting=csv.QUOTE_NONE)
+def get_dataset(ser, message, filename):
+    # Open the file
+    file = open(filename, 'a')
+    file.truncate(0)
 
-# Send the command to get the measurements
-my_write(ser, message)
-# Listen to the response
-while 1:
-    # Read a line = a row of the matrix S = a sample
-    line = my_readline(ser)
+    # Setup the csv
+    csv_writer = csv.writer(file, delimiter=',', escapechar=' ', quoting=csv.QUOTE_NONE)
 
-    # Check if the line is empty => skip
-    if line == '':
-        continue
+    # Send the command to get the measurements
+    my_write(ser, message)
 
-    # If there is something, I check if it is the termination message
-    if line == "Finished":
-        file.close()
-        break
+    # Listen to the response
+    while 1:
+        # Read a line = a row of the matrix S = a sample
+        line = my_readline(ser)
 
-    # If I'm here it is a proper sample
-    print(line)
-    csv_writer.writerow([line])
-    
+        # Check if the line is empty => skip
+        if line == '':
+            continue
+
+        # If there is something, I check if it is the termination message
+        if line == "Finished":
+            file.close()
+            break
+
+        # If I'm here it is a proper sample
+        print(line)
+        csv_writer.writerow([line])
+
+
+
+
+for i in range(1,4):
+    filename = "Dataset_"+str(i)+".csv"
+    step = i
+    message = " ".join([command, str(n_samples), str(step)])
+    get_dataset(ser, message, filename)
 
 ser.close() 

@@ -37,7 +37,7 @@ void parseMessage(char* message) {
     //for( ; message[i]!='\0'; i++);
     //step_string[i++] = 0;
 
-    Serial.printf("[\'%s\',\'%s\',\'%s\']", command, n_samples_string, step_string);
+    //Serial.printf("[\'%s\',\'%s\',\'%s\']", command, n_samples_string, step_string);
 
     // Convert the strings to integers
     n_samples = atoi(n_samples_string);
@@ -48,6 +48,8 @@ void parseMessage(char* message) {
 struct datum {
     float pwm;
     float rpm;
+    float voltage;
+    float current;
     float force;
 };
 
@@ -55,11 +57,14 @@ void getDatumPoint(float pwmValue, struct datum *z) {
     // Read data and store it in z
 
     z->pwm = pwmValue;
-    z->rpm = pwmValue * 0.3;
-    z->force = pwmValue * 0.6;
+    z->rpm = pwmValue * 0.3 + rand()%10 ;
+    z->voltage = 40 + rand()%10;
+    z->current = 180 - pwmValue + rand()%10;
+    z->force = pwmValue * 0.6 + + rand()%10;
 }
 
 void collectData(int &n_samples, float &step) {
+    Serial.println("PWM,RPM,Voltage,Current,Force");
     // Create the matrix which will contain the data points
     // NO! It provokes a stack overflow because too much memory
     int S_size = (int)(abs(180/step)) + 1;
@@ -79,7 +84,7 @@ void collectData(int &n_samples, float &step) {
         getDatumPoint(pwm, &z);
 
         // Send the matrix to the PC via serial
-        Serial.printf("%.2f,%.2f,%.2f\r\n", z.pwm, z.rpm, z.force);
+        Serial.printf("%.2f,%.2f,%.2f,%.2f,%.2f\r\n", z.pwm, z.rpm, z.voltage, z.current, z.force);
     }
 
     // Send something to say it finished
@@ -134,12 +139,12 @@ void receiveWithStartEndMarkers() {
 // Print the message
 void interpretMessage() {
     if (newData) {
-        Serial.printf("Message received: %s. Response: ", message);
+        //Serial.printf("Message received: %s. Response: ", message);
         newData = false;
 
         // Parse the message
         parseMessage(message);
-        Serial.printf("Command: %s, N: %d, step: %.2f\r\n", command, n_samples, step);
+        //Serial.printf("Command: %s, N: %d, step: %.2f\r\n", command, n_samples, step);
 
         if (!strcmp(command, "N")) {
             interpretN();
