@@ -1,52 +1,143 @@
-PWM,RPM,Voltage,Current,Force
-0.00,0.00,0.00,0.00,-0.00
-2.00,0.00,0.00,0.00,-0.00
-4.00,0.00,0.00,0.00,-0.00
-6.00,0.00,0.00,0.00,-0.00
-8.00,0.00,0.00,0.00,-0.00
-10.00,0.00,0.00,0.00,-0.00
-12.00,0.00,0.00,0.00,-0.00
-14.00,0.00,0.00,0.00,-0.00
-16.00,0.00,0.00,0.00,-0.00
-18.00,0.00,0.00,0.00,-0.00
-20.00,0.00,0.00,0.00,-0.00
-22.00,0.00,0.00,0.00,-0.00
-24.00,0.00,0.00,0.00,-0.00
-26.00,0.00,0.00,0.00,0.00
-28.00,0.00,0.00,0.00,-0.00
-30.00,0.00,0.00,0.00,0.00
-32.00,0.00,0.00,0.00,-0.00
-34.00,0.00,0.00,0.00,-0.00
-36.00,0.00,0.00,0.00,-0.00
-38.00,611.36,0.00,0.00,0.03
-40.00,1696.24,0.00,0.00,0.16
-42.00,2078.70,0.00,0.00,0.27
-44.00,2456.16,0.00,0.00,0.39
-46.00,2741.27,0.00,0.00,0.48
-48.00,2846.63,0.00,0.00,0.60
-50.00,3066.41,0.00,0.00,0.72
-52.00,3508.13,0.00,0.00,0.83
-54.00,3417.33,0.00,0.00,0.95
-56.00,4087.97,0.00,0.00,1.08
-58.00,3928.94,0.00,0.00,1.18
-60.00,4307.73,0.00,0.00,1.27
-62.00,3967.18,0.00,0.00,1.36
-64.00,4617.38,0.00,0.00,1.46
-66.00,4866.33,0.00,0.00,1.55
-68.00,4936.33,0.00,0.00,1.62
-70.00,4753.49,0.00,0.00,1.69
-72.00,5152.68,0.00,0.00,1.77
-74.00,5715.59,0.00,0.00,1.80
-76.00,4984.05,0.00,0.00,1.80
-78.00,4519.18,0.00,0.00,1.79
-80.00,4494.03,0.00,0.00,1.79
-82.00,5519.13,0.00,0.00,1.79
-84.00,5494.56,0.00,0.00,1.79
-86.00,4622.49,0.00,0.00,1.79
-88.00,5025.33,0.00,0.00,1.78
-90.00,5276.17,0.00,0.00,1.78
-92.00,4804.83,0.00,0.00,1.77
-94.00,5294.46,0.00,0.00,1.77
-96.00,4959.57,0.00,0.00,1.76
-98.00,4315.21,0.00,0.00,1.77
-100.00,5247.72,0.00,0.00,1.77
+0.000, 0.000
+0.000, 0.000
+Guru Meditation Error: Core  1 panic'ed (LoadProhibited). Exception was unhandled.
+Core  1 register dump:
+PC      : 0x40084788  PS      : 0x00050031  A0      : 0x800f1cc4  A1      : 0x3ffbee6c
+A2      : 0x00000040  A3      : 0x00018040  A4      : 0x000637ff  A5      : 0x3ffbee3c
+A6      : 0x00000000  A7      : 0x3ffbdb8c  A8      : 0x800842e2  A9      : 0x40088252
+A10     : 0x06796d1a  A11     : 0x00000000  A12     : 0x00000001  A13     : 0x3ffbee1c
+A14     : 0x00000000  A15     : 0x00000000  SAR     : 0x0000001d  EXCCAUSE: 0x0000001c
+EXCVADDR: 0x800f1cd0  LBEG    : 0x400029ac  LEND    : 0x400029cb  LCOUNT  : 0x00000000
+Backtrace:0x40084785:0x3ffbee6c |<-CORRUPTED
+ELF file SHA256: 0000000000000000
+Rebooting...
+Arduino is ready
+0.000, 196.724
+Guru Meditation Error: Core  1 panic'ed (LoadProhibited). Exception was unhandled.
+Core  1 register dump:
+PC      : 0x4008478c  PS      : 0x00050031  A0      : 0x800f1cd8  A1      : 0x3ffbee6c
+A2      : 0x00000040  A3      : 0x00018040  A4      : 0x000637ff  A5      : 0x3ffbee3c
+A6      : 0x00000000  A7      : 0x3ffbdb8c  A8      : 0x00000029  A9      : 0x40088256
+A10     : 0x00000001  A11     : 0x00000001  A12     : 0x00000001  A13     : 0x3ffbee1c
+A14     : 0x00000000  A15     : 0x00000000  SAR     : 0x0000001d  EXCCAUSE: 0x0000001c
+EXCVADDR: 0x800f1ce4  LBEG    : 0x400029ac  LEND    : 0x400029cb  LCOUNT  : 0x00000000
+Backtrace:0x40084789:0x3ffbee6c |<-CORRUPTED
+ELF file SHA256: 0000000000000000
+Rebooting...
+Arduino is ready
+0.000, 0.000
+Guru Meditation Error: Core  1 panic'ed (LoadProhibited). Exception was unhandled.
+Core  1 register dump:
+PC      : 0x40084798  PS      : 0x00050031  A0      : 0x800f1cd8  A1      : 0x3ffbee6c
+A2      : 0x00000040  A3      : 0x00018040  A4      : 0x000637ff  A5      : 0x3ffbee3c
+A6      : 0x00000000  A7      : 0x3ffbdb90  A8      : 0x800d16db  A9      : 0x40088262
+A10     : 0x0009856b  A11     : 0x6d68b333  A12     : 0x00000001  A13     : 0x3ffbee1c
+A14     : 0x00000000  A15     : 0x00000000  SAR     : 0x0000001d  EXCCAUSE: 0x0000001c
+EXCVADDR: 0x800f1ce4  LBEG    : 0x400029ac  LEND    : 0x400029cb  LCOUNT  : 0x00000000
+Backtrace:0x40084795:0x3ffbee6c |<-CORRUPTED
+ELF file SHA256: 0000000000000000
+Rebooting...
+Arduino is ready
+Arduino is ready
+0.000, 0.000
+Guru Meditation Error: Core  1 panic'ed (LoadProhibited). Exception was unhandled.
+Core  1 register dump:
+PC      : 0x400d20f5  PS      : 0x00060830  A0      : 0x800d1754  A1      : 0x3ffb2700
+A2      : 0x3ffc12c4  A3      : 0x000db3e7  A4      : 0x0000003f  A5      : 0x3ffb273c
+A6      : 0x3ffc16fc  A7      : 0x3ffb273c  A8      : 0x800d20b5  A9      : 0x3ffb26c0
+A10     : 0x00000013  A11     : 0x00000040  A12     : 0x00000013  A13     : 0x3ffb2780
+A14     : 0x3ffb2700  A15     : 0x00000008  SAR     : 0x0000001c  EXCCAUSE: 0x0000001c
+EXCVADDR: 0x000db3f3  LBEG    : 0x400029ac  LEND    : 0x400029cb  LCOUNT  : 0x00000000
+Backtrace:0x400d20f2:0x3ffb27000x400d1751:0x3ffb27a0 0x400d17b7:0x3ffb27e0 0x400d1866:0x3ffb2800 0x400d30d5:0x3ffb2820
+ELF file SHA256: 0000000000000000
+Rebooting...
+Arduino is ready
+Arduino is ready
+ets Jun  8 2016 00:22:57
+rst:0x1 (POWERON_RESET),boot:0x1 (DOWNLOAD_BOOT(UART0/UART1/SDIO_FEI_REO_V2))
+waiting for download
+
+0.000, 0.000
+Guru Meditation Error: Core  1 panic'ed (LoadProhibited). Exception was unhandled.
+Core  1 register dump:
+PC      : 0x400d2009  PS      : 0x00060c30  A0      : 0x800d2100  A1      : 0x3ffb2780
+A2      : 0x3ffc12c4  A3      : 0x3f400156  A4      : 0x8008ada0  A5      : 0x3ffb26a0
+A6      : 0x00000003  A7      : 0x00060023  A8      : 0x000f229d  A9      : 0x3ffb2770
+A10     : 0x00000008  A11     : 0x3f40015e  A12     : 0x00000008  A13     : 0x0000ff00
+A14     : 0x00ff0000  A15     : 0xff000000  SAR     : 0x00000010  EXCCAUSE: 0x0000001c
+EXCVADDR: 0x000f22a9  LBEG    : 0x40086569  LEND    : 0x40086579  LCOUNT  : 0xfffffffe
+Backtrace:0x400d2006:0x3ffb27800x400d20fd:0x3ffb27a0 0x400d1703:0x3ffb27c0 0x400d175b:0x3ffb27e0 0x400d180a:0x3ffb2800 0x400d3079:0x3ffb2820
+ELF file SHA256: 0000000000000000
+Rebooting...
+Arduino is ready
+Guru Meditation Error: Core  1 panic'ed (Interrupt wdt timeout on CPU1).
+Core  1 register dump:
+PC      : 0x4008aa86  PS      : 0x00060935  A0      : 0x80089cda  A1      : 0x3ffbecdc
+A2      : 0x3ffb8a00  A3      : 0x3ffb8890  A4      : 0x00000004  A5      : 0x00060923
+A6      : 0x00060923  A7      : 0x00000001  A8      : 0x3ffb8890  A9      : 0x00000018
+A10     : 0x3ffb8890  A11     : 0x00000018  A12     : 0x3ffc198c  A13     : 0x00060923
+A14     : 0x007bee88  A15     : 0x003fffff  SAR     : 0x00000010  EXCCAUSE: 0x00000006
+EXCVADDR: 0x00000000  LBEG    : 0x40086569  LEND    : 0x40086579  LCOUNT  : 0xfffffffe
+Core  1 was running in ISR context:
+EPC1    : 0x400db19f  EPC2    : 0x00000000  EPC3    : 0x00000000  EPC4    : 0x00000000
+Backtrace:0x4008aa83:0x3ffbecdc |<-CORRUPTED
+Core  0 register dump:
+PC      : 0x4008ac07  PS      : 0x00060035  A0      : 0x80089903  A1      : 0x3ffbe7dc
+A2      : 0x3ffbee88  A3      : 0xb33fffff  A4      : 0x0000abab  A5      : 0x00060023
+A6      : 0x00060021  A7      : 0x0000cdcd  A8      : 0x0000abab  A9      : 0xffffffff
+A10     : 0x3ffc17a4  A11     : 0x00000000  A12     : 0x3ffc17a0  A13     : 0x00000007
+A14     : 0x007bee88  A15     : 0x003fffff  SAR     : 0x0000001a  EXCCAUSE: 0x00000006
+EXCVADDR: 0x00000000  LBEG    : 0x00000000  LEND    : 0x00000000  LCOUNT  : 0x00000000
+Backtrace:0x4008ac04:0x3ffbe7dc |<-CORRUPTED
+ELF file SHA256: 0000000000000000
+Rebooting...
+Arduino is ready
+Guru Meditation Error: Core  1 panic'ed (Interrupt wdt timeout on CPU1).
+Core  1 register dump:
+PC      : 0x4008aa88  PS      : 0x00060935  A0      : 0x80089cda  A1      : 0x3ffbecdc
+A2      : 0x3ffb8a00  A3      : 0x3ffb8890  A4      : 0x00000004  A5      : 0x00060923
+A6      : 0x00060923  A7      : 0x00000001  A8      : 0x3ffb8890  A9      : 0x00000018
+A10     : 0x3ffb8890  A11     : 0x00000018  A12     : 0x3ffc198c  A13     : 0x00060923
+A14     : 0x007bee88  A15     : 0x003fffff  SAR     : 0x00000010  EXCCAUSE: 0x00000006
+EXCVADDR: 0x00000000  LBEG    : 0x40086569  LEND    : 0x40086579  LCOUNT  : 0xfffffffe
+Core  1 was running in ISR context:
+EPC1    : 0x400db19f  EPC2    : 0x00000000  EPC3    : 0x00000000  EPC4    : 0x00000000
+Backtrace:0x4008aa85:0x3ffbecdc |<-CORRUPTED
+Core  0 register dump:
+PC      : 0x4008abff  PS      : 0x00060035  A0      : 0x80089903  A1      : 0x3ffbe7dc
+A2      : 0x3ffbee88  A3      : 0xb33fffff  A4      : 0x0000abab  A5      : 0x00060023
+A6      : 0x00060021  A7      : 0x0000cdcd  A8      : 0x0000abab  A9      : 0xffffffff
+A10     : 0x3ffc17a4  A11     : 0x00000000  A12     : 0x3ffc17a0  A13     : 0x00000007
+A14     : 0x007bee88  A15     : 0x003fffff  SAR     : 0x0000001a  EXCCAUSE: 0x00000006
+EXCVADDR: 0x00000000  LBEG    : 0x00000000  LEND    : 0x00000000  LCOUNT  : 0x00000000
+Backtrace:0x4008abfc:0x3ffbe7dc |<-CORRUPTED
+ELF file SHA256: 0000000000000000
+Rebooting...
+Arduino is ready
+0.000, 2812.676
+337.277,70.900
+341.860,6545.931
+375.409,894.214
+400.160,1212.072
+421.054,1435.819
+439.075,1664.724
+453.117,2136.448
+466.835,2186.908
+479.436,2380.763
+490.414,2732.738
+502.206,2544.098
+510.005,3846.647
+518.862,3387.151
+526.956,3706.449
+Guru Meditation Error: Core  1 panic'ed (LoadProhibited). Exception was unhandled.
+Core  1 register dump:
+PC      : 0x40084790  PS      : 0x00050131  A0      : 0x800f1c7c  A1      : 0x3ffbee6c
+A2      : 0x00000040  A3      : 0x00018040  A4      : 0x000637ff  A5      : 0x3ffbee3c
+A6      : 0x00000000  A7      : 0x3ffbdb8c  A8      : 0x00000029  A9      : 0x4008825a
+A10     : 0x00000001  A11     : 0x00000001  A12     : 0x00000001  A13     : 0x3ffbee1c
+A14     : 0x00000000  A15     : 0x00000000  SAR     : 0x0000001f  EXCCAUSE: 0x0000001c
+EXCVADDR: 0x800f1c88  LBEG    : 0x400029ac  LEND    : 0x400029cb  LCOUNT  : 0x00000000
+Backtrace:0x4008478d:0x3ffbee6c |<-CORRUPTED
+ELF file SHA256: 0000000000000000
+Rebooting...
+Arduino is ready

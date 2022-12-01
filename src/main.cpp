@@ -21,24 +21,33 @@
 
     // Parser for the message
     char *command;
-    int n_samples;
-    float step;
-    float max_pwm;
     void parseMessage(char* message);
     void receiveWithStartEndMarkers();
     void interpretMessage();
     
-// DATA COLLECTION
+// DATA COLLECTION: RAMP
     // Data structure for the set of data points
     struct datum {
         float pwm;
         float rpm;
-        float voltage;
-        float current;
-        float force;
+        float thrust;
     };
+    int n_samples;
+    float step;
+    float min_pwm;
+    float max_pwm;
     void getDatumPoint(float pwmValue, int n_samples, struct datum *z);
-    void collectData(int &n_samples, float &step);
+    void collectDataRamp(int &n_samples, float &step);
+
+// DATA COLLECTION: STEP
+    const int step_n_samples = 1000;
+    volatile unsigned long t_samples[step_n_samples];
+    volatile float rpm_samples[step_n_samples];
+    volatile int sample_index = 0;
+    float step_value;
+    volatile unsigned long max_time;
+    volatile unsigned long t, t_start;
+    void collectDataStep(float &step_value, volatile unsigned long &max_time);
 
 // IR SENSOR (used as encoder): HW201 MH-B
     #define IR 13
@@ -50,19 +59,20 @@
     volatile unsigned long interruptDeltaT;
     volatile float rpm;
     //void IRAM_ATTR addOnePulse();   // When an interrupt is detected, increase the counter
-    void IRAM_ATTR computeRPM();    // Returns the measured rpm
+    void IRAM_ATTR computeRPM_storeInVariable();    // For the ramp measurement
+    void IRAM_ATTR computeRPM_storeInMatrix();      // For the step measurement
 
 // LOADCELL with HX711 amplificator
     #define AMP_DT 22
     #define AMP_SCK 23
     HX711 loadcell;
-    double force;
+    double thrust;
     #define LOADCELL_GAIN 399243    // Caibration value: output with 1kg load
 
 // ESC controller for the BLDC motor
     #define ESC_PIN 26
-    Servo motor;
-    int speed;      // 0 <= speed <= 180
+    ESC motor(ESC_PIN);
+    int speed;
     void setPWM(float);
 
 // Emergency button
@@ -72,9 +82,11 @@
 // ================================== SETUP & LOOP ================================================
 void setup() {
     Serial.begin(115200);
+    pinMode(BUILTIN_LED, OUTPUT);
+    digitalWrite(BUILTIN_LED, LOW);
 
     // Interrupt routines
-    attachInterrupt(IR, computeRPM, RISING);
+    attachInterrupt(IR, computeRPM_storeInVariable, RISING);
     attachInterrupt(BUTTON_PIN, stop, RISING);
     
     // Loadcell configuration
@@ -83,10 +95,11 @@ void setup() {
     loadcell.tare();
 
     // ESC configuration
-    motor.attach(ESC_PIN, 1000, 2000);
+    //motor.attach(ESC_PIN, 1000, 2000);
+    motor.arm();
     setPWM(0);
 
-    Serial.println("Arduino is ready");
+    Serial.println("\r\nArduino is ready");
 }
 
 void loop() {
@@ -98,32 +111,61 @@ void loop() {
 void parseMessage(char* message) {
     int i;
 
-    char *n_samples_string, *step_string, *max_pwm_string;
-
     // Parse the command
     command = message;                  // Set the command to start where message start
     for(i=0; message[i]!=' '; i++);     // Read all char until I find a space
     message[i++] = 0;                   // When I find a space, terminate the string
 
-    // Parse the number of samples
-    n_samples_string = message + i;
-    for( ; message[i]!=' '; i++);       
-    message[i++] = 0;
+    if (!strcmp(command, "R")) {
+        char *n_samples_string, *step_string, *min_pwm_string, *max_pwm_string;
 
-    // Parse the step
-    step_string = message + i;
-    for( ; message[i]!=' '; i++);       
-    message[i++] = 0;
+        // Parse the number of samples
+        n_samples_string = message + i;
+        for( ; message[i]!=' '; i++);       
+        message[i++] = 0;
 
-    // Parse the max_pwm value
-    max_pwm_string = message + i;
+        // Parse the step
+        step_string = message + i;
+        for( ; message[i]!=' '; i++);       
+        message[i++] = 0;
 
-    //Serial.printf("[\'%s\',\'%s\',\'%s\']", command, n_samples_string, step_string);
+        // Parse the min_pwm value
+        min_pwm_string = message + i;
+        for( ; message[i]!=' '; i++);       
+        message[i++] = 0;
 
-    // Convert the strings to integers
-    n_samples = atoi(n_samples_string);
-    step = atof(step_string);
-    max_pwm = atof(max_pwm_string);
+        // Parse the max_pwm value
+        max_pwm_string = message + i;
+
+        // Convert the strings to numbers
+        n_samples = atoi(n_samples_string);
+        step = atof(step_string);
+        min_pwm = atof(min_pwm_string);
+        max_pwm = atof(max_pwm_string);
+    }
+    else if (!strcmp(command, "S")) {
+        char *step_value_string, *n_samples_string, *max_time_string;
+
+        // Parse the value of the step input
+        step_value_string = message + i;
+        for( ; message[i]!=' '; i++);       
+        message[i++] = 0;
+
+        // Parse the number of samples
+        n_samples_string = message + i;
+        for( ; message[i]!=' '; i++);       
+        message[i++] = 0;
+
+        // Parse the max_time
+        max_time_string = message + i;
+
+        // Convert string to numbers
+        step_value = atof(step_value_string);
+        n_samples = atoi(n_samples_string);
+        max_time = atoi(max_time_string);
+    }
+
+    
 }
 
 // Read the message
@@ -169,43 +211,50 @@ void getDatumPoint(float pwmValue, int n_samples, struct datum *z) {
     // Set the pwm value to test
     setPWM(pwmValue);
 
+    // Blink
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(100);
+    digitalWrite(LED_BUILTIN, LOW);
+
     // Skip transient period
-    delay(200);
+    delay(100);
 
     // Compute the mean of the required amount of samples
     float sum_rpm = 0;
-    float sum_force = 0;
+    float sum_thrust = 0;
     for( int i=0; i<n_samples; i++ ) {
         // rpm are update automatically with interrupts
         sum_rpm += rpm;
         // The force must be obtained by polling the sensor
-        sum_force += loadcell.get_units(1) * 9.81;
-        delay(30);
+        sum_thrust += loadcell.get_units(1);     // Expressed in Newtons
+        delay(50);
     }
     float mean_rpm = sum_rpm / n_samples;
-    float mean_force = sum_force / n_samples;
+    float mean_thrust = sum_thrust / n_samples;
 
     z->pwm = pwmValue;
     z->rpm = mean_rpm ;
-    z->voltage = 0;
-    z->current = 0;
-    z->force = mean_force;
+    z->thrust = mean_thrust;
 }
 
-void collectData(int &n_samples, float &step) {
-    Serial.println("PWM,RPM,Voltage,Current,Force");
+void collectDataRamp(int &n_samples, float &step) {
+    Serial.println("PWM,RPM,Thrust");
+
+    // Set the correct interrupt function
+    detachInterrupt(IR);
+    attachInterrupt(IR, computeRPM_storeInVariable, RISING);
+
     // Create the matrix which will contain the data points
     // NO! It provokes a stack overflow because too much memory
-    int S_size = (int)(abs(max_pwm/step)) + 1;
-    // struct datum S[S_size];
+    int S_size = (int)(abs((max_pwm-min_pwm)/step)) + 1;
 
     loadcell.tare();
     setPWM(0);
     rpm = 0;
 
     // Detects step to decide if going 0->180 or 180->0
-    float pwm_0 = step>0 ? 0 : max_pwm;
-    float pwm_end = step>0 ? max_pwm : 0;
+    float pwm_0 = step>0 ? min_pwm : max_pwm;
+    float pwm_end = step>0 ? max_pwm : min_pwm;
 
     // Cycle to get the data points for each pwm value
     float pwm=pwm_0;
@@ -217,12 +266,65 @@ void collectData(int &n_samples, float &step) {
         getDatumPoint(pwm, n_samples, &z);
 
         // Send the matrix to the PC via serial
-        Serial.printf("%.2f,%.2f,%.2f,%.2f,%.2f\r\n", z.pwm, z.rpm, z.voltage, z.current, z.force);
+        Serial.printf("%.2f,%.3f,%.3f\r\n", z.pwm, z.rpm, z.thrust);
     }
 
     // Send something to say it finished
     Serial.println("Finished");
     setPWM(0);
+}
+
+void collectDataStep(float &step_value, volatile unsigned long &max_time) {
+    digitalWrite(BUILTIN_LED, HIGH);
+    //Serial.println("Time,RPM");
+
+    // Here we use a different approach
+    // Every time the IR sensor detects an impulse, we store the rpm value in an array
+    // In the array we also find the offset
+    // We do not measure the thrust, because it is too slow
+
+    // Matrix of data
+    sample_index = 0;
+
+    // Initialize the propeller
+    setPWM(1200);
+    rpm = 0;
+    delay(100);
+
+    // Set the correct interrupt function
+    detachInterrupt(IR);
+    attachInterrupt(IR, computeRPM_storeInMatrix, RISING);
+
+    // Define the initial delay
+    int init_delay = 1000;
+
+    // Set the starting time
+
+    // Wait a small delay to actually see the starting point in the graph
+    delay(init_delay);
+
+    digitalWrite(BUILTIN_LED, HIGH);
+
+    // Send the step signal
+    setPWM(step_value);
+    t_start = micros();
+
+    // Wait until max_time has passed
+    delay(1500);
+    digitalWrite(BUILTIN_LED, LOW);
+
+    // Stop the motor
+    setPWM(0);
+
+    // Now I should have all the data I need in the matrix
+    Serial.println("T,RPM");
+    Serial.printf("0,0\r\n");
+    Serial.printf("%.3f,0\r\n", (float)init_delay);
+    for (int i=0; i<sample_index; i++) {
+        float t = (float)t_samples[i]/1000.0;
+        Serial.printf("%.3f, %.3f\r\n", t, rpm_samples[i]);
+    }
+    Serial.println("Finished");
 }
 
 void interpretMessage() {
@@ -233,8 +335,11 @@ void interpretMessage() {
         // Parse the message
         parseMessage(message);
         //Serial.printf("Command: %s, N: %d, step: %.2f\r\n", command, n_samples, step);
-        if (!strcmp(command, "M")) {
-            collectData(n_samples, step);
+        if (!strcmp(command, "R")) {
+            collectDataRamp(n_samples, step);
+        }
+        else if (!strcmp(command, "S")) {
+            collectDataStep(step_value, max_time);
         }
         else {
             Serial.print("Not implemented");
@@ -244,7 +349,7 @@ void interpretMessage() {
     }
 }
 
-void IRAM_ATTR computeRPM() {
+void IRAM_ATTR computeRPM_storeInVariable() {
     // Update the timers
     interruptT = micros();
     interruptDeltaT = interruptT - interruptOldT;
@@ -254,7 +359,33 @@ void IRAM_ATTR computeRPM() {
 
     // Compute the rpm
     // NOTE: we are receiving an interrupt every time each of the two blades passes
-    rpm = 30000000.0 / interruptDeltaT;
+    rpm = 60000000.0 / interruptDeltaT;
+
+    // Store the time instant
+    interruptOldT = interruptT;
+}
+
+void IRAM_ATTR computeRPM_storeInMatrix() {
+    // Update the timers
+    interruptT = micros();
+    interruptDeltaT = interruptT - interruptOldT;
+
+    // Check if the minimum delay has passed. If not the interrupt is no considered valid 
+    if (interruptDeltaT < MIN_INTERRUPT_DELAY) return;
+
+    // Compute the rpm
+    // NOTE: we are receiving an interrupt every time each of the two blades passes
+    rpm = 60000000.0 / interruptDeltaT;
+
+    // Time delay from the starting time
+    t = interruptT - t_start;
+
+    // Store the values in the matrix
+    if (sample_index < step_n_samples) {
+        t_samples[sample_index] = t;
+        rpm_samples[sample_index] = rpm;
+        sample_index++;
+    }
 
     // Store the time instant
     interruptOldT = interruptT;
@@ -268,5 +399,5 @@ void IRAM_ATTR stop() {
 
 void setPWM(float pwm) {
     // NOTE: the write() function converts pwm to int
-    motor.write(pwm);
+    motor.speed(pwm);
 }
