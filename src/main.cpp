@@ -81,7 +81,7 @@
 
 // ================================== SETUP & LOOP ================================================
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(9600);
     pinMode(BUILTIN_LED, OUTPUT);
     digitalWrite(BUILTIN_LED, LOW);
 
@@ -151,17 +151,11 @@ void parseMessage(char* message) {
         for( ; message[i]!=' '; i++);       
         message[i++] = 0;
 
-        // Parse the number of samples
-        n_samples_string = message + i;
-        for( ; message[i]!=' '; i++);       
-        message[i++] = 0;
-
         // Parse the max_time
         max_time_string = message + i;
 
         // Convert string to numbers
         step_value = atof(step_value_string);
-        n_samples = atoi(n_samples_string);
         max_time = atoi(max_time_string);
     }
 
@@ -306,11 +300,11 @@ void collectDataStep(float &step_value, volatile unsigned long &max_time) {
     digitalWrite(BUILTIN_LED, HIGH);
 
     // Send the step signal
-    setPWM(step_value);
     t_start = micros();
+    setPWM(step_value);
 
     // Wait until max_time has passed
-    delay(1500);
+    delay(max_time);
     digitalWrite(BUILTIN_LED, LOW);
 
     // Stop the motor
@@ -322,23 +316,24 @@ void collectDataStep(float &step_value, volatile unsigned long &max_time) {
     Serial.printf("%.3f,0\r\n", (float)init_delay);
     for (int i=0; i<sample_index; i++) {
         float t = (float)t_samples[i]/1000.0;
-        Serial.printf("%.3f, %.3f\r\n", t, rpm_samples[i]);
+        Serial.printf("%.3f, %.3f\r\n", t+init_delay, rpm_samples[i]);
     }
     Serial.println("Finished");
 }
 
 void interpretMessage() {
     if (newData) {
-        //Serial.printf("Message received: %s. Response: ", message);
+        Serial.printf("Message received: %s. Response: ", message);
         newData = false;
 
         // Parse the message
         parseMessage(message);
-        //Serial.printf("Command: %s, N: %d, step: %.2f\r\n", command, n_samples, step);
+
         if (!strcmp(command, "R")) {
             collectDataRamp(n_samples, step);
         }
         else if (!strcmp(command, "S")) {
+            Serial.printf("Command: %s, Step: %d, max_time: %d\r\n", command, step_value, max_time);
             collectDataStep(step_value, max_time);
         }
         else {
