@@ -40,7 +40,7 @@
     void collectDataRamp(int &n_samples, float &step);
 
 // DATA COLLECTION: STEP
-    const int step_n_samples = 1000;
+    const int step_n_samples = 10000;
     volatile unsigned long t_samples[step_n_samples];
     volatile float rpm_samples[step_n_samples];
     volatile int sample_index = 0;
@@ -280,31 +280,28 @@ void collectDataStep(float &step_value, volatile unsigned long &max_time) {
     // Matrix of data
     sample_index = 0;
 
-    // Initialize the propeller
-    setPWM(1200);
-    rpm = 0;
-    delay(100);
+    digitalWrite(BUILTIN_LED, HIGH);
 
     // Set the correct interrupt function
     detachInterrupt(IR);
     attachInterrupt(IR, computeRPM_storeInMatrix, RISING);
 
     // Define the initial delay
-    int init_delay = 1000;
+    int init_delay = 2000;
 
-    // Set the starting time
+    // Start the motor
+    t_start = micros();
+    interruptOldT = t_start;
+    setPWM(1220);
 
     // Wait a small delay to actually see the starting point in the graph
-    delay(init_delay);
-
-    digitalWrite(BUILTIN_LED, HIGH);
+    while( millis() - t_start/1000 < init_delay );
 
     // Send the step signal
-    t_start = micros();
     setPWM(step_value);
 
     // Wait until max_time has passed
-    delay(max_time);
+    while( millis() - t_start/1000 < init_delay + max_time );
     detachInterrupt(IR);
     setPWM(0);
     digitalWrite(BUILTIN_LED, LOW);
@@ -323,10 +320,10 @@ void collectDataStep(float &step_value, volatile unsigned long &max_time) {
     // Now I should have all the data I need in the matrix
     Serial.println("T,RPM");
     Serial.printf("0,0\r\n");
-    Serial.printf("%.3f,0\r\n", (float)init_delay);
+    //Serial.printf("%lu,0\r\n", init_delay);
     for (int i=0; i<sample_index; i++) {
         unsigned long t = t_samples[i]/1000;
-        Serial.printf("%lu, %.3f\r\n", t+init_delay, rpm_samples[i]);
+        Serial.printf("%lu, %.3f\r\n", t, rpm_samples[i]);
     }
     Serial.println("Finished");
 }
