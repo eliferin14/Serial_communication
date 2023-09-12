@@ -305,18 +305,28 @@ void collectDataStep(float &step_value, volatile unsigned long &max_time) {
 
     // Wait until max_time has passed
     delay(max_time);
+    detachInterrupt(IR);
+    setPWM(0);
     digitalWrite(BUILTIN_LED, LOW);
 
-    // Stop the motor
-    setPWM(0);
+    // Process the data
+    unsigned long t = 0;
+    float rpm;
+    for (int i=0; i<sample_index; i++) {
+        t += t_samples[i];
+        rpm = 60000000.0 / t_samples[i];
+
+        t_samples[i] = t;
+        rpm_samples[i] = rpm;
+    }
 
     // Now I should have all the data I need in the matrix
     Serial.println("T,RPM");
     Serial.printf("0,0\r\n");
     Serial.printf("%.3f,0\r\n", (float)init_delay);
     for (int i=0; i<sample_index; i++) {
-        float t = (float)t_samples[i]/1000.0;
-        Serial.printf("%.3f, %.3f\r\n", t+init_delay, rpm_samples[i]);
+        unsigned long t = t_samples[i]/1000;
+        Serial.printf("%lu, %.3f\r\n", t+init_delay, rpm_samples[i]);
     }
     Serial.println("Finished");
 }
@@ -368,17 +378,20 @@ void IRAM_ATTR computeRPM_storeInMatrix() {
     // Check if the minimum delay has passed. If not the interrupt is no considered valid 
     if (interruptDeltaT < MIN_INTERRUPT_DELAY) return;
 
-    // Compute the rpm
-    // NOTE: we are receiving an interrupt every time each of the two blades passes
-    rpm = 60000000.0 / interruptDeltaT;
+    // Skip rpm computation
+    // rpm = 60000000.0 / interruptDeltaT;
 
     // Time delay from the starting time
-    t = interruptT - t_start;
+    // t = interruptT - t_start;
 
     // Store the values in the matrix
-    if (sample_index < step_n_samples) {
+    /*if (sample_index < step_n_samples) {
         t_samples[sample_index] = t;
         rpm_samples[sample_index] = rpm;
+        sample_index++;
+    }*/
+    if (interruptOldT != 0) {
+        t_samples[sample_index] = interruptDeltaT;
         sample_index++;
     }
 
