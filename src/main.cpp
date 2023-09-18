@@ -67,7 +67,7 @@
     #define AMP_SCK 23
     HX711 loadcell;
     double thrust;
-    #define LOADCELL_GAIN 399243    // Caibration value: output with 1kg load
+    #define LOADCELL_GAIN 399243    // Calibration value: output with 1kg load => get_units returns kilograms
 
 // ESC controller for the BLDC motor
     #define ESC_PIN 26
@@ -220,7 +220,7 @@ void getDatumPoint(float pwmValue, int n_samples, struct datum *z) {
         // rpm are update automatically with interrupts
         sum_rpm += rpm;
         // The force must be obtained by polling the sensor
-        sum_thrust += loadcell.get_units(1);     // Expressed in Newtons
+        sum_thrust += loadcell.get_units(1);     // Expressed in Kg
         delay(50);
     }
     float mean_rpm = sum_rpm / n_samples;
