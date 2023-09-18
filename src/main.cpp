@@ -44,6 +44,7 @@
     volatile unsigned long t_samples[step_n_samples];
     volatile float rpm_samples[step_n_samples];
     volatile int sample_index = 0;
+    int operating_point;
     float step_value;
     volatile unsigned long max_time;
     volatile unsigned long t, t_start;
@@ -147,7 +148,12 @@ void parseMessage(char* message) {
         max_pwm = atof(max_pwm_string);
     }
     else if (!strcmp(command, "S")) {
-        char *step_value_string, *n_samples_string, *max_time_string;
+        char *operating_point_string, *step_value_string, *max_time_string;
+
+        // Parse the value of the operating point
+        operating_point_string = message + i;
+        for( ; message[i]!=' '; i++);       
+        message[i++] = 0;
 
         // Parse the value of the step input
         step_value_string = message + i;
@@ -158,6 +164,7 @@ void parseMessage(char* message) {
         max_time_string = message + i;
 
         // Convert string to numbers
+        operating_point = atoi(operating_point_string);
         step_value = atof(step_value_string);
         max_time = atoi(max_time_string);
     }
@@ -294,13 +301,13 @@ void collectDataStep(float &step_value, volatile unsigned long &max_time) {
     // Start the motor
     t_start = micros();
     interruptOldT = t_start;
-    setPWM(1220);
+    setPWM(operating_point);
 
     // Wait a small delay to actually see the starting point in the graph
     while( millis() - t_start/1000 < init_delay );
 
     // Send the step signal
-    setPWM(step_value);
+    setPWM(operating_point + step_value);
 
     // Wait until max_time has passed
     while( millis() - t_start/1000 < init_delay + max_time );
