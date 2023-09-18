@@ -49,6 +49,9 @@
     volatile unsigned long t, t_start;
     void collectDataStep(float &step_value, volatile unsigned long &max_time);
 
+// MEASURE THE OPERATING POINT
+    void measureOperatingPoint();
+
 // IR SENSOR (used as encoder): HW201 MH-B
     #define IR 13
     #define MAX_RPM 30000         // max measurable RPM
@@ -158,7 +161,6 @@ void parseMessage(char* message) {
         step_value = atof(step_value_string);
         max_time = atoi(max_time_string);
     }
-
     
 }
 
@@ -328,6 +330,23 @@ void collectDataStep(float &step_value, volatile unsigned long &max_time) {
     Serial.println("Finished");
 }
 
+void measureOperatingPoint() {
+    digitalWrite(BUILTIN_LED, HIGH);
+    delay(3000);
+    loadcell.tare();
+    digitalWrite(BUILTIN_LED, LOW);
+    delay(3000);
+    digitalWrite(BUILTIN_LED, HIGH);
+
+    if (loadcell.is_ready()) {
+        float operatingPoint = loadcell.get_units(10);
+        Serial.printf("OP\n%.3f\n",operatingPoint);
+    }
+
+    digitalWrite(BUILTIN_LED, LOW);
+    Serial.println("Finished");
+}
+
 void interpretMessage() {
     if (newData) {
         Serial.printf("Message received: %s. Response: ", message);
@@ -342,6 +361,9 @@ void interpretMessage() {
         else if (!strcmp(command, "S")) {
             Serial.printf("Command: %s, Step: %d, max_time: %d\r\n", command, step_value, max_time);
             collectDataStep(step_value, max_time);
+        }
+        else if (!strcmp(command, "O")) {
+            measureOperatingPoint();
         }
         else {
             Serial.print("Not implemented");
